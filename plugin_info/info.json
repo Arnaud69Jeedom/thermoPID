@@ -1,69 +1,23 @@
 {
-	"id": "template",
-	"name": "Template",
-	"pluginVersion": "0.1",
-	"specialAttributes": {
-		"object": {
-			"toto": {
-				"name": {
-					"fr_FR": "Plop je suis un attribut spécial"
-				},
-				"type": "input"
-			},
-			"toto2": {
-				"name": {
-					"fr_FR": "Plop je suis un attribut spécial number"
-				},
-				"type": "number"
-			}
-		},
-		"user": {
-			"toto": {
-				"name": {
-					"fr_FR": "Plop je suis un attribut spécial"
-				},
-				"type": "select",
-				"values": [
-					{
-						"value": "1",
-						"name": "valeur 1"
-					},
-					{
-						"value": "plop",
-						"name": "valeur plop"
-					}
-				]
-			}
-		}
-	},
+	"id": "thermopid",
+	"name": "Thermostat PID",
+	"pluginVersion": "0.1",	
 	"description": {
-		"fr_FR": "Template servant de base à la création de plugins pour Jeedom"
+		"fr_FR": "Thermostat PID pour climatisation"
 	},
 	"licence": "AGPL",
-	"author": "Jeedom SAS",
+	"author": "arnaud69",
 	"require": "4.2",
-	"category": "programming",
+	"category": "wellness",
 	"hasDependency": false,
 	"hasOwnDeamon": false,
 	"maxDependancyInstallTime": 0,
-	"changelog_beta": "https:\/\/doc.jeedom.com\/#language#\/plugins\/programming\/template\/beta\/changelog",
-	"changelog": "https:\/\/doc.jeedom.com\/#language#\/plugins\/programming\/template\/changelog",
-	"documentation_beta": "https:\/\/doc.jeedom.com\/#language#\/plugins\/programming\/template\/beta",
-	"documentation": "https:\/\/doc.jeedom.com\/#language#\/plugins\/programming\/template",
-	"link": {
-		"forum": "Lien vers le forum",
-		"video": "Lien vers une video"
-	},
+	"changelog_beta": "https://github.com/Arnaud69Jeedom/thermoPID/blob/beta/docs/fr_FR/changelog_beta.md",
+	"changelog": "https://github.com/Arnaud69Jeedom/thermoPID/blob/master/docs/fr_FR/changelog.md",
+	"documentation_beta": "https://github.com/Arnaud69Jeedom/thermoPID/blob/beta/docs/fr_FR/index.md",
+	"documentation": "https://github.com/Arnaud69Jeedom/thermoPID/blob/master/docs/fr_FR/index.md",	
 	"language": [
-		"fr_FR",
-		"en_US",
-		"es_ES",
-		"de_DE",
-		"ru_RU",
-		"id_ID",
-		"it_IT",
-		"ja_JP",
-		"pt_PT"
+		"fr_FR"
 	],
 	"compatibility": [
 		"smart",

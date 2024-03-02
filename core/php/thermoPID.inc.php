@@ -15,16 +15,9 @@
 * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
 */
 
-require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
-
-// Fonction exécutée automatiquement après l'installation du plugin
-function thermoPID_install() {
-}
-
-// Fonction exécutée automatiquement après la mise à jour du plugin
-function thermoPID_update() {
-}
-
-// Fonction exécutée automatiquement après la suppression du plugin
-function thermoPID_remove() {
-}
+require_once __DIR__  . '/../../../../core/php/core.inc.php';
+/*
+*
+* Fichier d’inclusion si vous avez plusieurs fichiers de class ou 3rdParty à inclure
+*
+*/
