@@ -1,5 +1,5 @@
 {
-	"id": "thermopid",
+	"id": "thermoPID",
 	"name": "Thermostat PID",
 	"pluginVersion": "0.1",	
 	"description": {
