@@ -47,8 +47,9 @@ class thermoPID extends eqLogic {
 
   /*
   * Fonction exécutée automatiquement toutes les 10 minutes par Jeedom
-  public static function cron10() {}
   */
+  public static function cron10() {}
+  
 
   /*
   * Fonction exécutée automatiquement toutes les 15 minutes par Jeedom
@@ -119,6 +120,55 @@ class thermoPID extends eqLogic {
 
   // Fonction exécutée automatiquement après la sauvegarde (création ou mise à jour) de l'équipement
   public function postSave() {
+    log::add(__CLASS__, 'debug', '*** save ***');
+    log::add(__CLASS__, 'info', 'save sur : ' . $this->getHumanName());
+
+    $cmdConsigne = $this->getCmd(null, 'consigne');
+    if (!is_object($cmdConsigne)) {
+      $cmdConsigne = new thermoPIDCmd();
+      $cmdConsigne->setLogicalId('consigne');
+      $cmdConsigne->setName(__('consigne', __FILE__));
+      $cmdConsigne->setType('info');
+      $cmdConsigne->setSubType('numeric');
+
+      $cmdConsigne->setConfiguration('minValue', 15);
+      $cmdConsigne->setConfiguration('maxValue', 28);
+      $cmdConsigne->setUnite('°C');
+    }    
+    $cmdConsigne->setEqLogic_id($this->getId());
+    $cmdConsigne->save();
+    $targetTmpCmdId = $cmdConsigne->getId();
+
+    $cmd = $this->getCmd(null, 'consigne_cursor');
+    if (!is_object($cmd)) {
+      $cmd = new thermoPIDCmd();
+      $cmd->setLogicalId('consigne_cursor');
+      $cmd->setName(__('consigne_cursor', __FILE__));
+      $cmd->setType('action');
+      $cmd->setSubType('slider');
+      
+      $cmd->setValue($cmdConsigne->getId());
+      $cmd->setConfiguration('minValue', 15);
+      $cmd->setConfiguration('maxValue', 28);
+      $cmd->setUnite('°C');
+
+      $cmd->setConfiguration('message', '#slider#');
+    }    
+    $cmd->setEqLogic_id($this->getId());
+    // Liaison des deux commandes
+    $cmd->setValue($targetTmpCmdId);
+    $cmd->save();
+
+    $cmd = $this->getCmd(null, 'refresh');
+    if (!is_object($cmd)) {
+      $cmd = new thermoPIDCmd();
+      $cmd->setLogicalId('refresh');
+      $cmd->setName(__('Rafraichir', __FILE__));
+      $cmd->setType('action');
+      $cmd->setSubType('other');
+    }    
+    $cmd->setEqLogic_id($this->getId());
+    $cmd->save();
   }
 
   // Fonction exécutée automatiquement avant la suppression de l'équipement
@@ -146,6 +196,187 @@ class thermoPID extends eqLogic {
   */
 
   /*     * **********************Getteur Setteur*************************** */
+  private function getMyConfiguration(): StdClass {
+    $configuration = new StdClass();
+
+    // Obtenir la commande temperature
+    $temperature = $this->getConfiguration('temperature');
+    $temperature = str_replace('#', '', $temperature);
+    if ($temperature != '') {
+      $cmd = cmd::byId($temperature);
+      if ($cmd == null) {
+        log::add(__CLASS__, 'error', '  Mauvaise temperature :' . $temperature);
+        throw new Exception('Mauvaise temperature');
+      } else {
+        $value = $cmd->execCmd();
+        $configuration->temperature = floatval($value);
+      }
+    } else {
+        log::add(__CLASS__, 'error', '  temperature non renseignée');
+        throw new Exception('temperature non renseignée');
+    }
+
+    // integr mini
+    $minIntegr = $this->getConfiguration('minIntegr');  
+    if ($minIntegr != '' && is_numeric($minIntegr)) {
+        $configuration->minIntegr = floatval($minIntegr);
+    } else {
+        log::add(__CLASS__, 'error', '  minIntegr error :' . $minIntegr);
+        throw new Exception('minIntegr renseignée');
+    }
+
+    // integr maxi
+    $maxIntegr = $this->getConfiguration('maxIntegr');  
+    if ($maxIntegr != '' && is_numeric($maxIntegr)) {
+        $configuration->maxIntegr = floatval($maxIntegr);
+    } else {
+        log::add(__CLASS__, 'error', '  maxIntegr renseignée:' . $maxIntegr);
+        throw new Exception('maxIntegr non renseignée');
+    }
+
+    // total min
+    $minTotal = $this->getConfiguration('minTotal');  
+    if ($minTotal != '' && is_numeric($minTotal)) {
+        $configuration->minTotal = floatval($minTotal);
+    } else {
+        log::add(__CLASS__, 'error', '  minTotal renseignée:' . $minTotal);
+        throw new Exception('minTotal non renseignée');
+    }
+
+    // total max
+    $maxTotal = $this->getConfiguration('maxTotal');  
+    if ($maxTotal != '' && is_numeric($maxTotal)) {
+        $configuration->maxTotal = floatval($maxTotal);
+    } else {
+        log::add(__CLASS__, 'error', '  maxTotal renseignée:' . $maxTotal);
+        throw new Exception('maxTotal non renseignée');
+    }
+
+    // Kp
+    $Kp = $this->getConfiguration('coefKp');  
+    if ($Kp != '' && is_numeric($Kp)) {
+        $configuration->Kp = floatval($Kp);
+    } else {
+        log::add(__CLASS__, 'error', '  Kp renseignée:' . $Kp);
+        throw new Exception('Kp non renseignée');
+    }
+
+    // Ki
+    $Ki = $this->getConfiguration('coefKi');  
+    if ($Ki != '' && is_numeric($Ki)) {
+        $configuration->Ki = floatval($Ki);
+    } else {
+        log::add(__CLASS__, 'error', '  Ki renseignée:' . $Ki);
+        throw new Exception('Ki non renseignée');
+    }
+
+    // Kd
+    $Kd = $this->getConfiguration('coefKd');  
+    if ($Kd != '' && is_numeric($Kd)) {
+        $configuration->Kd = floatval($Kd);
+    } else {
+        log::add(__CLASS__, 'error', '  Kd renseignée:' . $Kd);
+        throw new Exception('Kd non renseignée');
+    }
+
+    log::add(__CLASS__, 'debug', ' configuration :' . json_encode((array)$configuration));
+    return $configuration;
+  }
+
+  public function execute() {
+    // configuration
+    $configuration = $this->getMyConfiguration();
+
+    // Cache : Correct_integr
+    $cache = cache::byKey('Correct_integr');
+		$Correct_integr = $cache->getValue();
+    if ($Correct_integr == '') {
+      $Correct_integr = 0;
+    }
+    // $Correct_integr = 0;
+    log::add('thermoPID', 'debug', ' cache Correct_integr : ' . $Correct_integr);
+
+    // Cache : Correct_erreur_previous
+    $cache = cache::byKey('Correct_erreur_previous');
+		$Correct_erreur_previous = $cache->getValue();
+    if ($Correct_erreur_previous == '') {
+      $Correct_erreur_previous = 0;
+    }
+    // $Correct_erreur_previous = 0;
+    log::add('thermoPID', 'debug', ' cache Correct_erreur_previous : ' . $Correct_erreur_previous);
+
+    // Consigne
+    $consigne = $this->getCmd(null, 'consigne');
+    $consigne = $consigne->execCmd();
+    log::add('thermoPID', 'debug', ' consigne : ' . $consigne);
+
+    // Calculs
+    $Correct_erreur = $consigne - $configuration->temperature;
+    log::add('thermoPID', 'debug', ' Correct_erreur : ' . $Correct_erreur);
+
+    $Correct_prop = $configuration->Kp * $Correct_erreur;
+    log::add('thermoPID', 'debug', ' Correct_prop : ' . $Correct_prop);
+
+
+    $Correct_integr = $Correct_integr + $Correct_erreur;
+    $Correct_integr = $configuration->Ki * $Correct_integr;
+    log::add('thermoPID', 'debug', ' Correct_integr : ' . $Correct_integr);
+    $Correct_integr = max(min($Correct_integr, $configuration->maxIntegr), $configuration->minIntegr); // a commenter
+    log::add('thermoPID', 'debug', ' > Correct_integr : ' . $Correct_integr);
+
+    $Correct_deriv = $configuration->Kd * ($Correct_erreur - $Correct_erreur_previous);
+    $Correct_deriv = round($Correct_deriv, 2); // ADL 
+    log::add('thermoPID', 'debug', ' Correct_deriv : ' . $Correct_deriv);
+
+    $Correct_total = $Correct_prop + $Correct_integr + $Correct_deriv;
+    log::add('thermoPID', 'debug', ' Correct_total : ' . $Correct_total);
+    $Correct_total = max(min($Correct_total, $configuration->maxTotal), $configuration->minTotal);  // a commenter
+    log::add('thermoPID', 'debug', ' > Correct_total : ' . $Correct_total);
+
+    $Temp_consign_clim = round($consigne + $Correct_total);
+    $Temp_consign_clim = max(min($Temp_consign_clim, 27), 15);
+    log::add('thermoPID', 'info', ' Temp_consign_clim : ' . $Temp_consign_clim);
+
+    // Cache
+    cache::set('Correct_integr', $Correct_integr);
+    cache::set('Correct_erreur_previous', $Correct_erreur);
+
+    // Cache : Correct_integr
+    $cache = cache::byKey('Correct_integr');
+		$Correct_integr = $cache->getValue();
+    log::add('thermoPID', 'debug', ' cache Correct_integr : ' . $Correct_integr);
+
+    // Cache : Correct_erreur_previous
+    $cache = cache::byKey('Correct_erreur_previous');
+		$Correct_erreur_previous = $cache->getValue();
+    log::add('thermoPID', 'debug', ' cache Correct_erreur_previous : ' . $Correct_erreur_previous);
+
+    // set consigne
+    log::add('thermoPID', 'debug', '  set consigne');
+
+    $writeConsigne = $this->getConfiguration('writeConsigne');
+    $writeConsigne = str_replace('#', '', $writeConsigne);
+    if ($writeConsigne != '') {
+      $cmd = cmd::byId($writeConsigne);
+      if ($cmd == null) {
+        log::add('thermoPID', 'error', '  Mauvaise writeConsigne :' . $writeConsigne);
+        throw new Exception('Mauvaise writeConsigne');
+      } else {
+       // $cmd->execCmd($Temp_consign_clim);
+       // $cmd->setValue($Temp_consign_clim);
+        $cmd->event($Temp_consign_clim);
+
+         log::add('thermoPID', 'debug', '  writeConsigne sur : ' . $cmd->getLogicalId());
+
+        // $eqlogic = $cmd->getEqLogic();
+        // log::add('thermoPID', 'debug', '  eqlogic : ' . $eqlogic->getName());
+        // $eqlogic->checkAndUpdateCmd($cmd->getLogicalId(), $Temp_consign_clim);
+      }
+    } else {
+        log::add('thermoPID', 'error', '  writeConsigne non renseignée');
+        throw new Exception('writeConsigne non renseignée');
+    } 
+  }
 }
 
 class thermoPIDCmd extends cmd {
@@ -169,6 +400,20 @@ class thermoPIDCmd extends cmd {
 
   // Exécution d'une commande
   public function execute($_options = array()) {
+    log::add('thermoPID', 'info', '*** ' . __FUNCTION__ . ' ***');
+    log::add('thermoPID', 'info', ' action : ' . $this->getLogicalId());
+
+    if ($this->getLogicalId() == 'refresh') {
+      $eqlogic = $this->getEqLogic(); //récupère l'éqlogic de la commande $this
+      log::add('thermoPID', 'info', ' > refresh sur ' . $eqlogic->getHumanName());      
+      $eqlogic->execute();
+    }
+
+    if ($this->getLogicalId() == 'consigne_cursor') {
+      $eqlogic = $this->getEqLogic();
+      $cmd = $eqlogic->getCmd('info', 'consigne');
+      $cmd->event($_options['slider']);
+    }
   }
 
   /*     * **********************Getteur Setteur*************************** */

@@ -25,10 +25,10 @@ $eqLogics = eqLogic::byType($plugin->getId());
 				<span>{{Configuration}}</span>
 			</div>
 		</div>
-		<legend><i class="fas fa-table"></i> {{Mes templates}}</legend>
+		<legend><i class="fas fa-table"></i> {{Mes thermostats}}</legend>
 		<?php
 		if (count($eqLogics) == 0) {
-			echo '<br><div class="text-center" style="font-size:1.2em;font-weight:bold;">{{Aucun équipement Template trouvé, cliquer sur "Ajouter" pour commencer}}</div>';
+			echo '<br><div class="text-center" style="font-size:1.2em;font-weight:bold;">{{Aucun thermostat trouvé, cliquer sur "Ajouter" pour commencer}}</div>';
 		} else {
 			// Champ de recherche
 			echo '<div class="input-group" style="margin:5px;">';
@@ -73,6 +73,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 		<ul class="nav nav-tabs" role="tablist">
 			<li role="presentation"><a href="#" class="eqLogicAction" aria-controls="home" role="tab" data-toggle="tab" data-action="returnToThumbnailDisplay"><i class="fas fa-arrow-circle-left"></i></a></li>
 			<li role="presentation" class="active"><a href="#eqlogictab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-tachometer-alt"></i> {{Equipement}}</a></li>
+			<li role="presentation"><a href="#thermotab" aria-controls="home" role="tab" data-toggle="tab"><i class="icon jeedom-thermo-moyen"></i> {{Paramètres}}</a></li>
 			<li role="presentation"><a href="#commandtab" aria-controls="home" role="tab" data-toggle="tab"><i class="fas fa-list"></i> {{Commandes}}</a></li>
 		</ul>
 		<div class="tab-content">
@@ -126,7 +127,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 								</div>
 							</div>
 
-							<legend><i class="fas fa-cogs"></i> {{Paramètres spécifiques}}</legend>
+							<!-- <legend><i class="fas fa-cogs"></i> {{Paramètres spécifiques}}</legend>
 							<div class="form-group">
 								<label class="col-sm-4 control-label">{{Nom du paramètre n°1}}
 									<sup><i class="fas fa-question-circle tooltips" title="{{Renseignez le paramètre n°1 de l'équipement}}"></i></sup>
@@ -142,10 +143,10 @@ $eqLogics = eqLogic::byType($plugin->getId());
 								<div class="col-sm-6">
 									<input type="text" class="eqLogicAttr form-control inputPassword" data-l1key="configuration" data-l2key="password">
 								</div>
-							</div>
+							</div> -->
 							<!-- Exemple de champ de saisie du cron d'auto-actualisation avec assistant -->
 							<!-- La fonction cron de la classe du plugin doit contenir le code prévu pour que ce champ soit fonctionnel -->
-							<div class="form-group">
+							<!-- <div class="form-group">
 								<label class="col-sm-4 control-label">{{Auto-actualisation}}
 									<sup><i class="fas fa-question-circle tooltips" title="{{Fréquence de rafraîchissement des commandes infos de l'équipement}}"></i></sup>
 								</label>
@@ -159,7 +160,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 										</span>
 									</div>
 								</div>
-							</div>
+							</div> -->
 						</div>
 
 						<!-- Partie droite de l'onglet "Équipement" -->
@@ -176,6 +177,88 @@ $eqLogics = eqLogic::byType($plugin->getId());
 					</fieldset>
 				</form>
 			</div><!-- /.tabpanel #eqlogictab-->
+
+
+			<!-- Onglet de configuration de l'équipement -->
+			<div role="tabpanel" class="tab-pane" id="thermotab">
+				<!-- Commande de la lumières -->
+				<form class="form-horizontal">
+					<fieldset>
+						<div class="col-lg-6">
+							<legend><i class="icon jeedom-thermo-moyen"></i> {{Informations}}</legend>
+							<div class="form-group">
+								<label class="col-sm-4 control-label">{{Température}}</label>
+								<div class="col-xs-11 col-sm-8">
+									<div class="input-group">
+										<input type="text" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="temperature" data-concat="0" />
+										<span class="input-group-btn">
+											<a class="btn btn-default listCmdInfo">
+												<i class="fas fa-list-alt"></i>
+											</a>
+										</span>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<label class="col-sm-4 control-label">{{Ecriture consigne}}</label>
+								<div class="col-xs-11 col-sm-8">
+									<div class="input-group">
+										<input type="text" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="writeConsigne" data-concat="0" />
+										<span class="input-group-btn">
+											<a class="btn btn-default listCmdAction">
+												<i class="fas fa-list-alt"></i>
+											</a>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="col-lg-6">
+							<div class="form-group">
+								<legend><i class="icon jeedom2-lightbulb25"></i> {{Coefficients}}</legend>
+								<div class="form-group">
+									<label class="col-sm-4 control-label">{{integr}}</label>
+									<div class="col-sm-6 input-group">
+										<span class="input-group-addon roundedLeft tippied">Min.</span>
+										<input type="number" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="minIntegr">
+										<span class="input-group-addon tippied">Max.</span>
+										<input type="number" class="eqLogicAttr form-control roundedRight" data-l1key="configuration" data-l2key="maxIntegr">
+									</div>
+								</div>
+
+								<div class="form-group">
+									<label class="col-sm-4 control-label">{{total}}</label>
+									<div class="col-sm-6 input-group">
+										<span class="input-group-addon roundedLeft tippied">Min.</span>
+										<input type="number" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="minTotal">
+										<span class="input-group-addon tippied">Max.</span>
+										<input type="number" class="eqLogicAttr form-control roundedRight" data-l1key="configuration" data-l2key="maxTotal">
+									</div>
+								</div>
+							
+								<div class="form-group">
+									<label class="col-sm-4 control-label">Kp</label>
+									<div class="col-sm-2">
+										<input class="eqLogicAttr form-control input-sm" data-l1key="configuration" data-l2key="coefKp">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-4 control-label">Ki</label>
+									<div class="col-sm-2">
+										<input class="eqLogicAttr form-control input-sm" data-l1key="configuration" data-l2key="coefKi">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-4 control-label">Kd</label>
+									<div class="col-sm-2">
+										<input class="eqLogicAttr form-control input-sm" data-l1key="configuration" data-l2key="coefKd">
+									</div>
+								</div>
+							</div>
+						</div>
+					</fieldset>
+				</form>
+			</div><!-- /.tabpanel #thermotab-->
 
 			<!-- Onglet des commandes de l'équipement -->
 			<div role="tabpanel" class="tab-pane" id="commandtab">
@@ -204,6 +287,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
 </div><!-- /.row row-overflow -->
 
 <!-- Inclusion du fichier javascript du plugin (dossier, nom_du_fichier, extension_du_fichier, id_du_plugin) -->
-<?php include_file('desktop', 'thermoPID', 'js', 'template'); ?>
+<?php include_file('desktop', 'thermoPID', 'js', 'thermoPID'); ?>
 <!-- Inclusion du fichier javascript du core - NE PAS MODIFIER NI SUPPRIMER -->
 <?php include_file('core', 'plugin.template', 'js'); ?>
