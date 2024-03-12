@@ -332,7 +332,12 @@ class thermoPID extends eqLogic {
     $configuration = $this->getMyConfiguration();
 
     // sortir si equipement éteint
-    if ($configuration->stateAsset === 0) return;
+    if ($configuration->stateAsset == 0) {
+      log::add(__CLASS__, 'debug', '> etat éteint, on sort');
+      return;
+    } 
+
+    log::add(__CLASS__, 'debug', '> etat allumé, on continue');
 
     // Cache : Correct_integr
     $cache = cache::byKey('Correct_integr');
