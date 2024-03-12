@@ -37,7 +37,7 @@ class thermoPID extends eqLogic {
 
   /*
   * Fonction exécutée automatiquement toutes les minutes par Jeedom
-  public static function cron() {}
+  public static function cron() { }
   */
 
   /*
@@ -48,7 +48,13 @@ class thermoPID extends eqLogic {
   /*
   * Fonction exécutée automatiquement toutes les 10 minutes par Jeedom
   */
-  public static function cron10() {}
+  public static function cron10() {
+    log::add(__CLASS__, 'debug', '*** cron10 ***');
+
+    foreach (eqLogic::byType(__CLASS__) as $eqLogic) {
+      $eqLogic->execute();
+    }
+  }
   
 
   /*
@@ -284,6 +290,8 @@ class thermoPID extends eqLogic {
   }
 
   public function execute() {
+    log::add(__CLASS__, 'debug', '> execute sur : '.$this->getHumanName());
+
     // configuration
     $configuration = $this->getMyConfiguration();
 
@@ -335,7 +343,7 @@ class thermoPID extends eqLogic {
 
     $Temp_consign_clim = round($consigne + $Correct_total);
     $Temp_consign_clim = max(min($Temp_consign_clim, 27), 15);
-    log::add('thermoPID', 'info', ' Temp_consign_clim : ' . $Temp_consign_clim);
+    log::add('thermoPID', 'debug', ' Temp_consign_clim : ' . $Temp_consign_clim);
 
     // Cache
     cache::set('Correct_integr', $Correct_integr);
@@ -403,12 +411,12 @@ class thermoPIDCmd extends cmd {
       $eqlogic->execute();
     }
 
-    if ($this->getLogicalId() == 'consigne_cursor') {
-      $eqlogic = $this->getEqLogic();
-      $cmd = $eqlogic->getCmd('info', 'consigne');
-      $cmd->event($_options['slider']);
-      $eqlogic->execute();
-    }
+    // if ($this->getLogicalId() == 'consigne_cursor') {
+    //   $eqlogic = $this->getEqLogic();
+    //   $cmd = $eqlogic->getCmd('info', 'consigne');
+    //   $cmd->event($_options['slider']);
+    //   $eqlogic->execute();
+    // }
   }
 
   /*     * **********************Getteur Setteur*************************** */
