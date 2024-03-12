@@ -199,6 +199,35 @@ $eqLogics = eqLogic::byType($plugin->getId());
 									</div>
 								</div>
 							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label">{{Etat équipement}}</label>
+								<div class="col-xs-11 col-sm-8">
+									<div class="input-group">
+										<input type="text" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="stateAsset" data-concat="0" />
+										<span class="input-group-btn">
+											<a class="btn btn-default listCmdInfo">
+												<i class="fas fa-list-alt"></i>
+											</a>
+										</span>
+									</div>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<label class="col-sm-4 control-label">{{Lecture consigne}}</label>
+								<div class="col-xs-11 col-sm-8">
+									<div class="input-group">
+										<input type="text" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="readConsigne" data-concat="0" />
+										<span class="input-group-btn">
+											<a class="btn btn-default listCmdInfo">
+												<i class="fas fa-list-alt"></i>
+											</a>
+										</span>
+									</div>
+								</div>
+							</div>
+
 							<div class="form-group">
 								<label class="col-sm-4 control-label">{{Ecriture consigne}}</label>
 								<div class="col-xs-11 col-sm-8">

@@ -52,7 +52,9 @@ class thermoPID extends eqLogic {
     log::add(__CLASS__, 'debug', '*** cron10 ***');
 
     foreach (eqLogic::byType(__CLASS__) as $eqLogic) {
-      $eqLogic->execute();
+      if ($eqLogic->getIsEnable()) {
+        $eqLogic->execute();
+      }
     }
   }
   
@@ -222,6 +224,40 @@ class thermoPID extends eqLogic {
         throw new Exception('temperature non renseignée');
     }
 
+    // Obtenir la commande Etat Equipement
+    $stateAsset = $this->getConfiguration('stateAsset');
+    $stateAsset = str_replace('#', '', $stateAsset);
+    if ($stateAsset != '') {
+      $cmd = cmd::byId($stateAsset);
+      if ($cmd == null) {
+        log::add(__CLASS__, 'error', '  Mauvaise stateAsset :' . $stateAsset);
+        throw new Exception('Mauvaise stateAsset');
+      } else {
+        $value = $cmd->execCmd();
+        $configuration->stateAsset = floatval($value);
+      }
+    } else {
+        log::add(__CLASS__, 'error', '  stateAsset non renseignée');
+        throw new Exception('stateAsset non renseignée');
+    }
+
+    // Obtenir la commande read consigne
+    $readConsigne = $this->getConfiguration('readConsigne');
+    $readConsigne = str_replace('#', '', $readConsigne);
+    if ($readConsigne != '') {
+      $cmd = cmd::byId($readConsigne);
+      if ($cmd == null) {
+        log::add(__CLASS__, 'error', '  Mauvaise readConsigne :' . $readConsigne);
+        throw new Exception('Mauvaise readConsigne');
+      } else {
+        $value = $cmd->execCmd();
+        $configuration->readConsigne = floatval($value);
+      }
+    } else {
+        log::add(__CLASS__, 'error', '  readConsigne non renseignée');
+        throw new Exception('readConsigne non renseignée');
+    }
+
     // integr mini
     $minIntegr = $this->getConfiguration('minIntegr');  
     if ($minIntegr != '' && is_numeric($minIntegr)) {
@@ -295,6 +331,9 @@ class thermoPID extends eqLogic {
     // configuration
     $configuration = $this->getMyConfiguration();
 
+    // sortir si equipement éteint
+    if ($configuration->stateAsset === 0) return;
+
     // Cache : Correct_integr
     $cache = cache::byKey('Correct_integr');
 		$Correct_integr = $cache->getValue();
@@ -358,6 +397,12 @@ class thermoPID extends eqLogic {
     $cache = cache::byKey('Correct_erreur_previous');
 		$Correct_erreur_previous = $cache->getValue();
     log::add('thermoPID', 'debug', ' cache Correct_erreur_previous : ' . $Correct_erreur_previous);
+
+    // Comparaison avec consigne déjà setter
+    if ($configuration->readConsigne == $Temp_consign_clim) {
+      log::add('thermoPID', 'debug', ' valeur climatisation déjà ok : ' . $Temp_consign_clim. '=='.$configuration->readConsigne);
+      return;
+    }
 
     // set consigne
     log::add('thermoPID', 'debug', '  set consigne');
