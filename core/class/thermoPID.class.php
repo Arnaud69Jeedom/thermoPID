@@ -456,12 +456,12 @@ class thermoPIDCmd extends cmd {
       $eqlogic->execute();
     }
 
-    // if ($this->getLogicalId() == 'consigne_cursor') {
-    //   $eqlogic = $this->getEqLogic();
-    //   $cmd = $eqlogic->getCmd('info', 'consigne');
-    //   $cmd->event($_options['slider']);
-    //   $eqlogic->execute();
-    // }
+    if ($this->getLogicalId() == 'consigne_cursor') {
+      $eqlogic = $this->getEqLogic();
+      $cmd = $eqlogic->getCmd('info', 'consigne');
+      $cmd->event($_options['slider']);
+      $eqlogic->execute();
+    }
   }
 
   /*     * **********************Getteur Setteur*************************** */
