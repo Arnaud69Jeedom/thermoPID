@@ -362,15 +362,10 @@ class thermoPID extends eqLogic {
         log::add('thermoPID', 'error', '  Mauvaise writeConsigne :' . $writeConsigne);
         throw new Exception('Mauvaise writeConsigne');
       } else {
-       // $cmd->execCmd($Temp_consign_clim);
-       // $cmd->setValue($Temp_consign_clim);
-        $cmd->event($Temp_consign_clim);
-
-         log::add('thermoPID', 'debug', '  writeConsigne sur : ' . $cmd->getLogicalId());
-
-        // $eqlogic = $cmd->getEqLogic();
-        // log::add('thermoPID', 'debug', '  eqlogic : ' . $eqlogic->getName());
-        // $eqlogic->checkAndUpdateCmd($cmd->getLogicalId(), $Temp_consign_clim);
+        log::add('thermoPID', 'debug', '  writeConsigne sur : ' . $cmd->getHumanName() .' avec : ' . $Temp_consign_clim);
+        //$cmd->event($Temp_consign_clim);
+        $option = array('slider'=>$Temp_consign_clim);
+        $cmd->execCmd($option, $cache=0);
       }
     } else {
         log::add('thermoPID', 'error', '  writeConsigne non renseignée');
