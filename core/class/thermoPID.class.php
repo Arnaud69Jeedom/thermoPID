@@ -363,7 +363,6 @@ class thermoPID extends eqLogic {
         throw new Exception('Mauvaise writeConsigne');
       } else {
         log::add('thermoPID', 'debug', '  writeConsigne sur : ' . $cmd->getHumanName() .' avec : ' . $Temp_consign_clim);
-        //$cmd->event($Temp_consign_clim);
         $option = array('slider'=>$Temp_consign_clim);
         $cmd->execCmd($option, $cache=0);
       }
@@ -408,6 +407,7 @@ class thermoPIDCmd extends cmd {
       $eqlogic = $this->getEqLogic();
       $cmd = $eqlogic->getCmd('info', 'consigne');
       $cmd->event($_options['slider']);
+      $eqlogic->execute();
     }
   }
 
